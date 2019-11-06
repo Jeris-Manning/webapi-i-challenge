@@ -20,7 +20,7 @@ server.get('/api/users', (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        message: err,
+        message: 'The users information could not be retrieved',
         success: false
       });
     });
@@ -31,15 +31,27 @@ server.get('/api/users', (req, res) => {
 server.get('/api/users/:id', (req, res) => {
   const id = req.params.id;
 
-  db.findById(id).then((user) => {
-    if (user) {
-      res.status(200).json({ success: true, user });
-    } else {
+  db.findById(id)
+    .then((user) => {
+      if (user) {
+        res.status(200).json({ success: true, user });
+      } else {
+        res
+          .status(404)
+          .json({
+            success: false,
+            message: `No user with id ${id} in system.`
+          });
+      }
+    })
+    .catch((err) => {
       res
-        .status(404)
-        .json({ success: false, message: `No user with id ${id} in system.` });
-    }
-  });
+        .status(500)
+        .json({
+          success: false,
+          message: "The user's information could not be retrieved."
+        });
+    });
 });
 
 // ADDS A NEW USER TO THE DATABASE
@@ -52,12 +64,10 @@ server.post('/api/users', (req, res) => {
       if (user.name && user.bio) {
         res.status(201).json({ success: true, user });
       } else {
-        res
-          .status(400)
-          .json({
-            success: false,
-            errorMessage: 'Please provide name and bio for the user.'
-          });
+        res.status(400).json({
+          success: false,
+          errorMessage: 'Please provide name and bio for the user.'
+        });
       }
     })
     .catch((err) => {
